@@ -15,15 +15,22 @@
  * @api private
  */
 
-export default function Session(req, data) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.default = Session;
+function Session(req, data) {
   Object.defineProperty(this, 'req', { value: req });
   Object.defineProperty(this, 'id', { value: req.sessionID });
 
-  if (typeof data === 'object' && data !== null) {
+  if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && data !== null) {
     // merge data into this, ignoring prototype properties
     for (var prop in data) {
       if (!(prop in this)) {
-        this[prop] = data[prop]
+        this[prop] = data[prop];
       }
     }
   }
@@ -63,7 +70,7 @@ defineMethod(Session.prototype, 'resetMaxAge', function resetMaxAge() {
  */
 
 defineMethod(Session.prototype, 'save', function save(fn) {
-  this.req.sessionStore.set(this.id, this, fn || function(){});
+  this.req.sessionStore.set(this.id, this, fn || function () {});
   return this;
 });
 
@@ -80,10 +87,10 @@ defineMethod(Session.prototype, 'save', function save(fn) {
  */
 
 defineMethod(Session.prototype, 'reload', function reload(fn) {
-  var req = this.req
-  var store = this.req.sessionStore
+  var req = this.req;
+  var store = this.req.sessionStore;
 
-  store.get(this.id, function(err, sess){
+  store.get(this.id, function (err, sess) {
     if (err) return fn(err);
     if (!sess) return fn(new Error('failed to load session'));
     store.createSession(req, sess);
@@ -135,3 +142,4 @@ function defineMethod(obj, name, fn) {
     writable: true
   });
 }
+module.exports = exports.default;

@@ -1,5 +1,21 @@
-import cookie from "cookie";
-import depd_moduleDefault from "depd";
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _cookie = require("cookie");
+
+var _cookie2 = _interopRequireDefault(_cookie);
+
+var _depd = require("depd");
+
+var _depd2 = _interopRequireDefault(_depd);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /*!
  * Connect - session - Cookie
  * Copyright(c) 2010 Sencha Inc.
@@ -9,7 +25,7 @@ import depd_moduleDefault from "depd";
 
 'use strict';
 
-var deprecate = depd_moduleDefault('express-session')
+var deprecate = (0, _depd2.default)('express-session');
 
 var Cookie = function Cookie(options) {
   this.path = '/';
@@ -17,18 +33,16 @@ var Cookie = function Cookie(options) {
   this.httpOnly = true;
 
   if (options) {
-    if (typeof options !== 'object') {
-      throw new TypeError('argument options must be a object')
+    if ((typeof options === "undefined" ? "undefined" : _typeof(options)) !== 'object') {
+      throw new TypeError('argument options must be a object');
     }
 
     for (var key in options) {
-      this[key] = options[key]
+      this[key] = options[key];
     }
   }
 
-  this.originalMaxAge = undefined == this.originalMaxAge
-    ? this.maxAge
-    : this.originalMaxAge;
+  this.originalMaxAge = undefined == this.originalMaxAge ? this.maxAge : this.originalMaxAge;
 };
 
 /*!
@@ -69,16 +83,14 @@ Cookie.prototype = {
 
   set maxAge(ms) {
     if (ms && typeof ms !== 'number' && !(ms instanceof Date)) {
-      throw new TypeError('maxAge must be a number or Date')
+      throw new TypeError('maxAge must be a number or Date');
     }
 
     if (ms instanceof Date) {
-      deprecate('maxAge as Date; pass number of milliseconds instead')
+      deprecate('maxAge as Date; pass number of milliseconds instead');
     }
 
-    this.expires = 'number' == typeof ms
-      ? new Date(Date.now() + ms)
-      : ms;
+    this.expires = 'number' == typeof ms ? new Date(Date.now() + ms) : ms;
   },
 
   /**
@@ -89,9 +101,7 @@ Cookie.prototype = {
    */
 
   get maxAge() {
-    return this.expires instanceof Date
-      ? this.expires.valueOf() - Date.now()
-      : this.expires;
+    return this.expires instanceof Date ? this.expires.valueOf() - Date.now() : this.expires;
   },
 
   /**
@@ -103,14 +113,14 @@ Cookie.prototype = {
 
   get data() {
     return {
-      originalMaxAge: this.originalMaxAge
-      , expires: this._expires
-      , secure: this.secure
-      , httpOnly: this.httpOnly
-      , domain: this.domain
-      , path: this.path
-      , sameSite: this.sameSite
-    }
+      originalMaxAge: this.originalMaxAge,
+      expires: this._expires,
+      secure: this.secure,
+      httpOnly: this.httpOnly,
+      domain: this.domain,
+      path: this.path,
+      sameSite: this.sameSite
+    };
   },
 
   /**
@@ -120,8 +130,8 @@ Cookie.prototype = {
    * @api public
    */
 
-  serialize: function(name, val){
-    return cookie.serialize(name, val, this.data);
+  serialize: function serialize(name, val) {
+    return _cookie2.default.serialize(name, val, this.data);
   },
 
   /**
@@ -131,8 +141,9 @@ Cookie.prototype = {
    * @api private
    */
 
-  toJSON: function(){
+  toJSON: function toJSON() {
     return this.data;
   }
 };
-export default Cookie;
+exports.default = Cookie;
+module.exports = exports.default;
