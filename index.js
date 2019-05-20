@@ -1,3 +1,16 @@
+import safebuffer_moduleObject from "safe-buffer";
+import cookie from "cookie";
+import crypto from "crypto";
+import debug_moduleDefault from "debug";
+import depd_moduleDefault from "depd";
+import onHeaders from "on-headers";
+import parseUrl from "parseurl";
+import signature from "cookie-signature";
+import uidsafe_moduleObject from "uid-safe";
+import Cookie from "./session/cookie";
+import MemoryStore from "./session/memory";
+import Session from "./session/session";
+import Store from "./session/store";
 /*!
  * express-session
  * Copyright(c) 2010 Sencha Inc.
@@ -13,39 +26,23 @@
  * @private
  */
 
-var Buffer = require('safe-buffer').Buffer
-var cookie = require('cookie');
-var crypto = require('crypto')
-var debug = require('debug')('express-session');
-var deprecate = require('depd')('express-session');
-var onHeaders = require('on-headers')
-var parseUrl = require('parseurl');
-var signature = require('cookie-signature')
-var uid = require('uid-safe').sync
-
-var Cookie = require('./session/cookie')
-var MemoryStore = require('./session/memory')
-var Session = require('./session/session')
-var Store = require('./session/store')
+var Buffer = safebuffer_moduleObject.Buffer
+var debug = debug_moduleDefault('express-session');
+var deprecate = depd_moduleDefault('express-session');
+var uid = uidsafe_moduleObject.sync
 
 // environment
 
 var env = process.env.NODE_ENV;
 
 /**
- * Expose the middleware.
- */
-
-exports = module.exports = session;
-
-/**
  * Expose constructors.
  */
 
-exports.Store = Store;
-exports.Cookie = Cookie;
-exports.Session = Session;
-exports.MemoryStore = MemoryStore;
+session.Store = Store;
+session.Cookie = Cookie;
+session.Session = Session;
+session.MemoryStore = MemoryStore;
 
 /**
  * Warning message for `MemoryStore` usage in production.
@@ -84,7 +81,7 @@ var defer = typeof setImmediate === 'function'
  * @public
  */
 
-function session(options) {
+export default function session(options) {
   var opts = options || {}
 
   // get the cookie options
@@ -490,7 +487,7 @@ function session(options) {
       next();
     });
   };
-};
+}
 
 /**
  * Generate a session ID for a new session.
