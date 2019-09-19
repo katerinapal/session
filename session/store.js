@@ -1,3 +1,8 @@
+import { Cookie } from "./cookie";
+import events_moduleObject from "events";
+import { Session } from "./session";
+import util from "util";
+var exported_Store = Store;
 /*!
  * Connect - session - Store
  * Copyright(c) 2010 Sencha Inc.
@@ -7,29 +12,9 @@
 
 'use strict';
 
-/**
- * Module dependencies.
- * @private
- */
+var EventEmitter = events_moduleObject.EventEmitter
 
-var Cookie = require('./cookie')
-var EventEmitter = require('events').EventEmitter
-var Session = require('./session')
-var util = require('util')
-
-/**
- * Module exports.
- * @public
- */
-
-module.exports = Store
-
-/**
- * Abstract base class for session stores.
- * @public
- */
-
-function Store () {
+function Store() {
   EventEmitter.call(this)
 }
 
@@ -92,3 +77,10 @@ Store.prototype.createSession = function(req, sess){
   req.session = new Session(req, sess);
   return req.session;
 };
+
+/**
+ * Abstract base class for session stores.
+ * @public
+ */
+
+export { exported_Store as Store };
