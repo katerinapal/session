@@ -1,17 +1,16 @@
 
+import after from "after";
+import assert from "assert";
+import express from "express";
+import request from "supertest";
+import cookieParser from "cookie-parser";
+import * as session from "../";
+import { Cookie } from "../session/cookie";
+import fs from "fs";
+import http from "http";
+import https from "https";
+import util from "util";
 process.env.NO_DEPRECATION = 'express-session';
-
-var after = require('after')
-var assert = require('assert')
-var express = require('express')
-  , request = require('supertest')
-  , cookieParser = require('cookie-parser')
-  , session = require('../')
-  , Cookie = require('../session/cookie')
-var fs = require('fs')
-var http = require('http')
-var https = require('https')
-var util = require('util')
 
 var min = 60 * 1000;
 
@@ -836,7 +835,7 @@ describe('session()', function(){
 
   describe('genid option', function(){
     it('should reject non-function values', function(){
-      assert.throws(session.bind(null, { genid: 'bogus!' }), /genid.*must/)
+      assert.throws(session.session.bind(null, { genid: 'bogus!' }), /genid.*must/)
     });
 
     it('should provide default generator', function(done){
@@ -1259,7 +1258,7 @@ describe('session()', function(){
 
   describe('unset option', function () {
     it('should reject unknown values', function(){
-      assert.throws(session.bind(null, { unset: 'bogus!' }), /unset.*must/)
+      assert.throws(session.session.bind(null, { unset: 'bogus!' }), /unset.*must/)
     });
 
     it('should default to keep', function(done){
@@ -2155,7 +2154,7 @@ function createSession(opts) {
     options.secret = 'keyboard cat'
   }
 
-  return session(options)
+  return session.session(options);
 }
 
 function end(req, res) {
