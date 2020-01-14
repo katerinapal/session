@@ -1,3 +1,5 @@
+import { Store } from "./store";
+import util from "util";
 /*!
  * express-session
  * Copyright(c) 2010 Sencha Inc.
@@ -9,14 +11,6 @@
 'use strict';
 
 /**
- * Module dependencies.
- * @private
- */
-
-var Store = require('./store')
-var util = require('util')
-
-/**
  * Shim setImmediate for node.js < 0.10
  * @private
  */
@@ -25,17 +19,6 @@ var util = require('util')
 var defer = typeof setImmediate === 'function'
   ? setImmediate
   : function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
-
-/**
- * Module exports.
- */
-
-module.exports = MemoryStore
-
-/**
- * A session store in memory.
- * @public
- */
 
 function MemoryStore() {
   Store.call(this)
@@ -183,3 +166,11 @@ function getSession(sessionId) {
 
   return sess
 }
+var exported_MemoryStore = MemoryStore;
+
+/**
+ * A session store in memory.
+ * @public
+ */
+
+export { exported_MemoryStore as MemoryStore };
