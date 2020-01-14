@@ -1,3 +1,5 @@
+import merge from "utils-merge";
+import cookie from "cookie";
 /*!
  * Connect - session - Cookie
  * Copyright(c) 2010 Sencha Inc.
@@ -8,13 +10,6 @@
 'use strict';
 
 /**
- * Module dependencies.
- */
-
-var merge = require('utils-merge')
-  , cookie = require('cookie');
-
-/**
  * Initialize a new `Cookie` with the given `options`.
  *
  * @param {IncomingMessage} req
@@ -22,7 +17,7 @@ var merge = require('utils-merge')
  * @api private
  */
 
-var Cookie = module.exports = function Cookie(options) {
+var Cookie = function Cookie(options) {
   this.path = '/';
   this.maxAge = null;
   this.httpOnly = true;
@@ -31,6 +26,8 @@ var Cookie = module.exports = function Cookie(options) {
     ? this.maxAge
     : this.originalMaxAge;
 };
+
+var exported_Cookie = Cookie;
 
 /*!
  * Prototype.
@@ -128,3 +125,4 @@ Cookie.prototype = {
     return this.data;
   }
 };
+export { exported_Cookie as Cookie };
