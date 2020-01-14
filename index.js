@@ -1,3 +1,19 @@
+import cookie from "cookie";
+import crc_moduleObject from "crc";
+import debug from "debug";
+import depd from "depd";
+import parseUrl from "parseurl";
+import uidsafe_moduleObject from "uid-safe";
+import onHeaders from "on-headers";
+import signature from "cookie-signature";
+import { Session } from "./session/session";
+import { MemoryStore } from "./session/memory";
+import { Cookie } from "./session/cookie";
+import { Store } from "./session/store";
+var functionObject_MemoryStore;
+var functionObject_Session;
+var functionObject_Cookie;
+var functionObject_Store;
 /*!
  * express-session
  * Copyright(c) 2010 Sencha Inc.
@@ -8,43 +24,18 @@
 
 'use strict';
 
-/**
- * Module dependencies.
- * @private
- */
-
-var cookie = require('cookie');
-var crc = require('crc').crc32;
-var debug = require('debug')('express-session');
-var deprecate = require('depd')('express-session');
-var parseUrl = require('parseurl');
-var uid = require('uid-safe').sync
-  , onHeaders = require('on-headers')
-  , signature = require('cookie-signature')
-
-var Session = require('./session/session')
-  , MemoryStore = require('./session/memory')
-  , Cookie = require('./session/cookie')
-  , Store = require('./session/store')
+var crc = crc_moduleObject.crc32;
+var deprecate = depd('express-session');
+var uid = uidsafe_moduleObject.sync;
 
 // environment
 
 var env = process.env.NODE_ENV;
 
-/**
- * Expose the middleware.
- */
-
-exports = module.exports = session;
-
-/**
- * Expose constructors.
- */
-
-exports.Store = Store;
-exports.Cookie = Cookie;
-exports.Session = Session;
-exports.MemoryStore = MemoryStore;
+functionObject_Store = Store;
+functionObject_Cookie = Cookie;
+functionObject_Session = Session;
+functionObject_MemoryStore = MemoryStore;
 
 /**
  * Warning message for `MemoryStore` usage in production.
@@ -489,7 +480,7 @@ function session(options) {
       next();
     });
   };
-};
+}
 
 /**
  * Generate a session ID for a new session.
@@ -662,3 +653,4 @@ function unsigncookie(val, secrets) {
 
   return false;
 }
+export { functionObject_Store as Store, functionObject_Session as Session, functionObject_MemoryStore as MemoryStore, session };
