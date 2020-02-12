@@ -1,3 +1,20 @@
+import safebuffer_moduleObject from "safe-buffer";
+import cookie from "cookie";
+import crypto from "crypto";
+import debug_moduleDefault from "debug";
+import depd_moduleDefault from "depd";
+import onHeaders from "on-headers";
+import parseUrl from "parseurl";
+import signature from "cookie-signature";
+import uidsafe_moduleObject from "uid-safe";
+import { Cookie } from "./session/cookie";
+import { MemoryStore } from "./session/memory";
+import { Session } from "./session/session";
+import { Store } from "./session/store";
+var index_MemoryStore;
+var index_Session;
+var index_Cookie;
+var index_Store;
 /*!
  * express-session
  * Copyright(c) 2010 Sencha Inc.
@@ -13,39 +30,19 @@
  * @private
  */
 
-var Buffer = require('safe-buffer').Buffer
-var cookie = require('cookie');
-var crypto = require('crypto')
-var debug = require('debug')('express-session');
-var deprecate = require('depd')('express-session');
-var onHeaders = require('on-headers')
-var parseUrl = require('parseurl');
-var signature = require('cookie-signature')
-var uid = require('uid-safe').sync
-
-var Cookie = require('./session/cookie')
-var MemoryStore = require('./session/memory')
-var Session = require('./session/session')
-var Store = require('./session/store')
+var Buffer = safebuffer_moduleObject.Buffer
+var debug = debug_moduleDefault('express-session');
+var deprecate = depd_moduleDefault('express-session');
+var uid = uidsafe_moduleObject.sync
 
 // environment
 
 var env = process.env.NODE_ENV;
 
-/**
- * Expose the middleware.
- */
-
-exports = module.exports = session;
-
-/**
- * Expose constructors.
- */
-
-exports.Store = Store;
-exports.Cookie = Cookie;
-exports.Session = Session;
-exports.MemoryStore = MemoryStore;
+index_Store = Store;
+index_Cookie = Cookie;
+index_Session = Session;
+index_MemoryStore = MemoryStore;
 
 /**
  * Warning message for `MemoryStore` usage in production.
@@ -65,24 +62,6 @@ var warning = 'Warning: connect.session() MemoryStore is not\n'
 var defer = typeof setImmediate === 'function'
   ? setImmediate
   : function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
-
-/**
- * Setup session store with the given `options`.
- *
- * @param {Object} [options]
- * @param {Object} [options.cookie] Options for cookie
- * @param {Function} [options.genid]
- * @param {String} [options.name=connect.sid] Session ID cookie name
- * @param {Boolean} [options.proxy]
- * @param {Boolean} [options.resave] Resave unmodified sessions back to the store
- * @param {Boolean} [options.rolling] Enable/disable rolling session expiration
- * @param {Boolean} [options.saveUninitialized] Save uninitialized sessions to the store
- * @param {String|Array} [options.secret] Secret for signing session ID
- * @param {Object} [options.store=MemoryStore] Session store
- * @param {String} [options.unset]
- * @return {Function} middleware
- * @public
- */
 
 function session(options) {
   var opts = options || {}
@@ -490,7 +469,7 @@ function session(options) {
       next();
     });
   };
-};
+}
 
 /**
  * Generate a session ID for a new session.
@@ -667,3 +646,25 @@ function unsigncookie(val, secrets) {
 
   return false;
 }
+export { index_Store, index_Session, index_MemoryStore };
+var exported_session = session;
+
+/**
+ * Setup session store with the given `options`.
+ *
+ * @param {Object} [options]
+ * @param {Object} [options.cookie] Options for cookie
+ * @param {Function} [options.genid]
+ * @param {String} [options.name=connect.sid] Session ID cookie name
+ * @param {Boolean} [options.proxy]
+ * @param {Boolean} [options.resave] Resave unmodified sessions back to the store
+ * @param {Boolean} [options.rolling] Enable/disable rolling session expiration
+ * @param {Boolean} [options.saveUninitialized] Save uninitialized sessions to the store
+ * @param {String|Array} [options.secret] Secret for signing session ID
+ * @param {Object} [options.store=MemoryStore] Session store
+ * @param {String} [options.unset]
+ * @return {Function} middleware
+ * @public
+ */
+
+export { exported_session as session };

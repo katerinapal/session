@@ -7,20 +7,6 @@
 
 'use strict';
 
-/**
- * Expose Session.
- */
-
-module.exports = Session;
-
-/**
- * Create a new `Session` with the given request and `data`.
- *
- * @param {IncomingRequest} req
- * @param {Object} data
- * @api private
- */
-
 function Session(req, data) {
   Object.defineProperty(this, 'req', { value: req });
   Object.defineProperty(this, 'id', { value: req.sessionID });
@@ -140,4 +126,15 @@ function defineMethod(obj, name, fn) {
     value: fn,
     writable: true
   });
-};
+}
+var exported_Session = Session;
+
+/**
+ * Create a new `Session` with the given request and `data`.
+ *
+ * @param {IncomingRequest} req
+ * @param {Object} data
+ * @api private
+ */
+
+export { exported_Session as Session };
