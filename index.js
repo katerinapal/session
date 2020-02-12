@@ -1,16 +1,56 @@
-import safebuffer_moduleObject from "safe-buffer";
-import cookie from "cookie";
-import crypto from "crypto";
-import debug_moduleDefault from "debug";
-import depd_moduleDefault from "depd";
-import onHeaders from "on-headers";
-import parseUrl from "parseurl";
-import signature from "cookie-signature";
-import uidsafe_moduleObject from "uid-safe";
-import { Cookie } from "./session/cookie";
-import { MemoryStore } from "./session/memory";
-import { Session } from "./session/session";
-import { Store } from "./session/store";
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.session = exports.index_MemoryStore = exports.index_Session = exports.index_Store = undefined;
+
+var _safeBuffer = require("safe-buffer");
+
+var _safeBuffer2 = _interopRequireDefault(_safeBuffer);
+
+var _cookie = require("cookie");
+
+var _cookie2 = _interopRequireDefault(_cookie);
+
+var _crypto = require("crypto");
+
+var _crypto2 = _interopRequireDefault(_crypto);
+
+var _debug = require("debug");
+
+var _debug2 = _interopRequireDefault(_debug);
+
+var _depd = require("depd");
+
+var _depd2 = _interopRequireDefault(_depd);
+
+var _onHeaders = require("on-headers");
+
+var _onHeaders2 = _interopRequireDefault(_onHeaders);
+
+var _parseurl = require("parseurl");
+
+var _parseurl2 = _interopRequireDefault(_parseurl);
+
+var _cookieSignature = require("cookie-signature");
+
+var _cookieSignature2 = _interopRequireDefault(_cookieSignature);
+
+var _uidSafe = require("uid-safe");
+
+var _uidSafe2 = _interopRequireDefault(_uidSafe);
+
+var _cookie3 = require("./session/cookie");
+
+var _memory = require("./session/memory");
+
+var _session = require("./session/session");
+
+var _store = require("./session/store");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var index_MemoryStore;
 var index_Session;
 var index_Cookie;
@@ -30,28 +70,26 @@ var index_Store;
  * @private
  */
 
-var Buffer = safebuffer_moduleObject.Buffer
-var debug = debug_moduleDefault('express-session');
-var deprecate = depd_moduleDefault('express-session');
-var uid = uidsafe_moduleObject.sync
+var Buffer = _safeBuffer2.default.Buffer;
+var debug = (0, _debug2.default)('express-session');
+var deprecate = (0, _depd2.default)('express-session');
+var uid = _uidSafe2.default.sync;
 
 // environment
 
 var env = process.env.NODE_ENV;
 
-index_Store = Store;
-index_Cookie = Cookie;
-index_Session = Session;
-index_MemoryStore = MemoryStore;
+exports.index_Store = index_Store = _store.Store;
+index_Cookie = _cookie3.Cookie;
+exports.index_Session = index_Session = _session.Session;
+exports.index_MemoryStore = index_MemoryStore = _memory.MemoryStore;
 
 /**
  * Warning message for `MemoryStore` usage in production.
  * @private
  */
 
-var warning = 'Warning: connect.session() MemoryStore is not\n'
-  + 'designed for a production environment, as it will leak\n'
-  + 'memory, and will not scale past a single process.';
+var warning = 'Warning: connect.session() MemoryStore is not\n' + 'designed for a production environment, as it will leak\n' + 'memory, and will not scale past a single process.';
 
 /**
  * Node.js 0.8+ async implementation.
@@ -59,39 +97,39 @@ var warning = 'Warning: connect.session() MemoryStore is not\n'
  */
 
 /* istanbul ignore next */
-var defer = typeof setImmediate === 'function'
-  ? setImmediate
-  : function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
+var defer = typeof setImmediate === 'function' ? setImmediate : function (fn) {
+  process.nextTick(fn.bind.apply(fn, arguments));
+};
 
 function session(options) {
-  var opts = options || {}
+  var opts = options || {};
 
   // get the cookie options
-  var cookieOptions = opts.cookie || {}
+  var cookieOptions = opts.cookie || {};
 
   // get the session id generate function
-  var generateId = opts.genid || generateSessionId
+  var generateId = opts.genid || generateSessionId;
 
   // get the session cookie name
-  var name = opts.name || opts.key || 'connect.sid'
+  var name = opts.name || opts.key || 'connect.sid';
 
   // get the session store
-  var store = opts.store || new MemoryStore()
+  var store = opts.store || new _memory.MemoryStore();
 
   // get the trust proxy setting
-  var trustProxy = opts.proxy
+  var trustProxy = opts.proxy;
 
   // get the resave session option
   var resaveSession = opts.resave;
 
   // get the rolling session option
-  var rollingSessions = Boolean(opts.rolling)
+  var rollingSessions = Boolean(opts.rolling);
 
   // get the save uninitialized session option
-  var saveUninitializedSession = opts.saveUninitialized
+  var saveUninitializedSession = opts.saveUninitialized;
 
   // get the cookie signing secret
-  var secret = opts.secret
+  var secret = opts.secret;
 
   if (typeof generateId !== 'function') {
     throw new TypeError('genid option must be a function');
@@ -112,7 +150,7 @@ function session(options) {
   }
 
   // TODO: switch to "destroy" on next major
-  var unsetDestroy = opts.unset === 'destroy'
+  var unsetDestroy = opts.unset === 'destroy';
 
   if (Array.isArray(secret) && secret.length === 0) {
     throw new TypeError('secret option array must contain one or more strings');
@@ -129,15 +167,15 @@ function session(options) {
   // notify user that this store is not
   // meant for a production environment
   /* istanbul ignore next: not tested */
-  if ('production' == env && store instanceof MemoryStore) {
+  if ('production' == env && store instanceof _memory.MemoryStore) {
     console.warn(warning);
   }
 
   // generates the new session
-  store.generate = function(req){
+  store.generate = function (req) {
     req.sessionID = generateId(req);
-    req.session = new Session(req);
-    req.session.cookie = new Cookie(cookieOptions);
+    req.session = new _session.Session(req);
+    req.session.cookie = new _cookie3.Cookie(cookieOptions);
 
     if (cookieOptions.secure === 'auto') {
       req.session.cookie.secure = issecure(req, trustProxy);
@@ -147,31 +185,31 @@ function session(options) {
   var storeImplementsTouch = typeof store.touch === 'function';
 
   // register event listeners for the store to track readiness
-  var storeReady = true
+  var storeReady = true;
   store.on('disconnect', function ondisconnect() {
-    storeReady = false
-  })
+    storeReady = false;
+  });
   store.on('connect', function onconnect() {
-    storeReady = true
-  })
+    storeReady = true;
+  });
 
   return function session(req, res, next) {
     // self-awareness
     if (req.session) {
-      next()
-      return
+      next();
+      return;
     }
 
     // Handle connection as if there is no session if
     // the store has temporarily disconnected etc
     if (!storeReady) {
-      debug('store is disconnected')
-      next()
-      return
+      debug('store is disconnected');
+      next();
+      return;
     }
 
     // pathname mismatch
-    var originalPath = parseUrl.original(req).pathname || '/'
+    var originalPath = _parseurl2.default.original(req).pathname || '/';
     if (originalPath.indexOf(cookieOptions.path || '/') !== 0) return next();
 
     // ensure a secret is available or bail
@@ -187,7 +225,7 @@ function session(options) {
     var originalHash;
     var originalId;
     var savedHash;
-    var touched = false
+    var touched = false;
 
     // expose store
     req.sessionStore = store;
@@ -196,7 +234,7 @@ function session(options) {
     var cookieId = req.sessionID = getcookie(req, name, secrets);
 
     // set-cookie
-    onHeaders(res, function(){
+    (0, _onHeaders2.default)(res, function () {
       if (!req.session) {
         debug('no session');
         return;
@@ -214,8 +252,8 @@ function session(options) {
 
       if (!touched) {
         // touch session
-        req.session.touch()
-        touched = true
+        req.session.touch();
+        touched = true;
       }
 
       // set cookie
@@ -260,9 +298,7 @@ function session(options) {
 
         if (!isNaN(contentLength) && contentLength > 0) {
           // measure chunk
-          chunk = !Buffer.isBuffer(chunk)
-            ? Buffer.from(chunk, encoding)
-            : chunk;
+          chunk = !Buffer.isBuffer(chunk) ? Buffer.from(chunk, encoding) : chunk;
           encoding = undefined;
 
           if (chunk.length !== 0) {
@@ -302,8 +338,8 @@ function session(options) {
 
       if (!touched) {
         // touch session
-        req.session.touch()
-        touched = true
+        req.session.touch();
+        touched = true;
       }
 
       if (shouldSave(req)) {
@@ -344,15 +380,15 @@ function session(options) {
 
     // wrap session methods
     function wrapmethods(sess) {
-      var _reload = sess.reload
+      var _reload = sess.reload;
       var _save = sess.save;
 
       function reload(callback) {
-        debug('reloading %s', this.id)
+        debug('reloading %s', this.id);
         _reload.call(this, function () {
-          wrapmethods(req.session)
-          callback.apply(this, arguments)
-        })
+          wrapmethods(req.session);
+          callback.apply(this, arguments);
+        });
       }
 
       function save() {
@@ -366,7 +402,7 @@ function session(options) {
         enumerable: false,
         value: reload,
         writable: true
-      })
+      });
 
       Object.defineProperty(sess, 'save', {
         configurable: true,
@@ -399,9 +435,7 @@ function session(options) {
         return false;
       }
 
-      return !saveUninitializedSession && cookieId !== req.sessionID
-        ? isModified(req.session)
-        : !isSaved(req.session)
+      return !saveUninitializedSession && cookieId !== req.sessionID ? isModified(req.session) : !isSaved(req.session);
     }
 
     // determine if session should be touched
@@ -422,9 +456,7 @@ function session(options) {
         return false;
       }
 
-      return cookieId != req.sessionID
-        ? saveUninitializedSession || isModified(req.session)
-        : rollingSessions || req.session.cookie.expires != null && isModified(req.session);
+      return cookieId != req.sessionID ? saveUninitializedSession || isModified(req.session) : rollingSessions || req.session.cookie.expires != null && isModified(req.session);
     }
 
     // generate a session if the browser doesn't send a sessionID
@@ -437,7 +469,7 @@ function session(options) {
 
     // generate the session object
     debug('fetching %s', req.sessionID);
-    store.get(req.sessionID, function(err, sess){
+    store.get(req.sessionID, function (err, sess) {
       // error handling
       if (err) {
         debug('error %j', err);
@@ -448,11 +480,11 @@ function session(options) {
         }
 
         generate();
-      // no session
+        // no session
       } else if (!sess) {
         debug('no session found');
         generate();
-      // populate req.session
+        // populate req.session
       } else {
         debug('session found');
         store.createSession(req, sess);
@@ -460,7 +492,7 @@ function session(options) {
         originalHash = hash(sess);
 
         if (!resaveSession) {
-          savedHash = originalHash
+          savedHash = originalHash;
         }
 
         wrapmethods(req.session);
@@ -496,7 +528,7 @@ function getcookie(req, name, secrets) {
 
   // read from cookie header
   if (header) {
-    var cookies = cookie.parse(header);
+    var cookies = _cookie2.default.parse(header);
 
     raw = cookies[name];
 
@@ -509,7 +541,7 @@ function getcookie(req, name, secrets) {
           val = undefined;
         }
       } else {
-        debug('cookie unsigned')
+        debug('cookie unsigned');
       }
     }
   }
@@ -540,7 +572,7 @@ function getcookie(req, name, secrets) {
           val = undefined;
         }
       } else {
-        debug('cookie unsigned')
+        debug('cookie unsigned');
       }
     }
   }
@@ -561,17 +593,14 @@ function hash(sess) {
   var str = JSON.stringify(sess, function (key, val) {
     // ignore sess.cookie property
     if (this === sess && key === 'cookie') {
-      return
+      return;
     }
 
-    return val
-  })
+    return val;
+  });
 
   // hash
-  return crypto
-    .createHash('sha1')
-    .update(str, 'utf8')
-    .digest('hex')
+  return _crypto2.default.createHash('sha1').update(str, 'utf8').digest('hex');
 }
 
 /**
@@ -596,15 +625,13 @@ function issecure(req, trustProxy) {
 
   // no explicit trust; try req.secure from express
   if (trustProxy !== true) {
-    return req.secure === true
+    return req.secure === true;
   }
 
   // read the proto from x-forwarded-proto header
   var header = req.headers['x-forwarded-proto'] || '';
   var index = header.indexOf(',');
-  var proto = index !== -1
-    ? header.substr(0, index).toLowerCase().trim()
-    : header.toLowerCase().trim()
+  var proto = index !== -1 ? header.substr(0, index).toLowerCase().trim() : header.toLowerCase().trim();
 
   return proto === 'https';
 }
@@ -616,15 +643,15 @@ function issecure(req, trustProxy) {
  */
 
 function setcookie(res, name, val, secret, options) {
-  var signed = 's:' + signature.sign(val, secret);
-  var data = cookie.serialize(name, signed, options);
+  var signed = 's:' + _cookieSignature2.default.sign(val, secret);
+  var data = _cookie2.default.serialize(name, signed, options);
 
   debug('set-cookie %s', data);
 
-  var prev = res.getHeader('Set-Cookie') || []
+  var prev = res.getHeader('Set-Cookie') || [];
   var header = Array.isArray(prev) ? prev.concat(data) : [prev, data];
 
-  res.setHeader('Set-Cookie', header)
+  res.setHeader('Set-Cookie', header);
 }
 
 /**
@@ -637,7 +664,7 @@ function setcookie(res, name, val, secret, options) {
  */
 function unsigncookie(val, secrets) {
   for (var i = 0; i < secrets.length; i++) {
-    var result = signature.unsign(val, secrets[i]);
+    var result = _cookieSignature2.default.unsign(val, secrets[i]);
 
     if (result !== false) {
       return result;
@@ -646,7 +673,10 @@ function unsigncookie(val, secrets) {
 
   return false;
 }
-export { index_Store, index_Session, index_MemoryStore };
+exports.index_Store = index_Store;
+exports.index_Session = index_Session;
+exports.index_MemoryStore = index_MemoryStore;
+
 var exported_session = session;
 
 /**
@@ -667,4 +697,4 @@ var exported_session = session;
  * @public
  */
 
-export { exported_session as session };
+exports.session = exported_session;
