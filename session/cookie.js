@@ -1,5 +1,20 @@
-import utilsmerge_merge from "utils-merge";
-import cookie_cookie from "cookie";
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Cookie = undefined;
+
+var _utilsMerge = require("utils-merge");
+
+var _utilsMerge2 = _interopRequireDefault(_utilsMerge);
+
+var _cookie = require("cookie");
+
+var _cookie2 = _interopRequireDefault(_cookie);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /*!
  * Connect - session - Cookie
  * Copyright(c) 2010 Sencha Inc.
@@ -23,10 +38,8 @@ var Cookie = function Cookie(options) {
   this.path = '/';
   this.maxAge = null;
   this.httpOnly = true;
-  if (options) utilsmerge_merge(this, options);
-  this.originalMaxAge = undefined == this.originalMaxAge
-    ? this.maxAge
-    : this.originalMaxAge;
+  if (options) (0, _utilsMerge2.default)(this, options);
+  this.originalMaxAge = undefined == this.originalMaxAge ? this.maxAge : this.originalMaxAge;
 };
 
 /*!
@@ -66,9 +79,7 @@ Cookie.prototype = {
    */
 
   set maxAge(ms) {
-    this.expires = 'number' == typeof ms
-      ? new Date(Date.now() + ms)
-      : ms;
+    this.expires = 'number' == typeof ms ? new Date(Date.now() + ms) : ms;
   },
 
   /**
@@ -79,9 +90,7 @@ Cookie.prototype = {
    */
 
   get maxAge() {
-    return this.expires instanceof Date
-      ? this.expires.valueOf() - Date.now()
-      : this.expires;
+    return this.expires instanceof Date ? this.expires.valueOf() - Date.now() : this.expires;
   },
 
   /**
@@ -93,14 +102,14 @@ Cookie.prototype = {
 
   get data() {
     return {
-      originalMaxAge: this.originalMaxAge
-      , expires: this._expires
-      , secure: this.secure
-      , httpOnly: this.httpOnly
-      , domain: this.domain
-      , path: this.path
-      , sameSite: this.sameSite
-    }
+      originalMaxAge: this.originalMaxAge,
+      expires: this._expires,
+      secure: this.secure,
+      httpOnly: this.httpOnly,
+      domain: this.domain,
+      path: this.path,
+      sameSite: this.sameSite
+    };
   },
 
   /**
@@ -110,8 +119,8 @@ Cookie.prototype = {
    * @api public
    */
 
-  serialize: function(name, val){
-    return cookie_cookie.serialize(name, val, this.data);
+  serialize: function serialize(name, val) {
+    return _cookie2.default.serialize(name, val, this.data);
   },
 
   /**
@@ -121,9 +130,9 @@ Cookie.prototype = {
    * @api private
    */
 
-  toJSON: function(){
+  toJSON: function toJSON() {
     return this.data;
   }
 };
-cookie_Cookie = Cookie;
-export { cookie_Cookie as Cookie };
+exports.Cookie = cookie_Cookie = Cookie;
+exports.Cookie = cookie_Cookie;
