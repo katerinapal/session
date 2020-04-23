@@ -1,26 +1,25 @@
 
+import after_after from "after";
+import assert_assert from "assert";
+import express_express from "express";
+import supertest_request from "supertest";
+import cookieparser_cookieParser from "cookie-parser";
+import { session as index_sessionjs } from "../";
+import { Cookie as sessioncookie_Cookiejs } from "../session/cookie";
+import fs_fs from "fs";
+import http_http from "http";
+import https_https from "https";
+import util_util from "util";
 "use strict";
 process.env.NO_DEPRECATION = 'express-session';
-
-var after = require('after')
-var assert = require('assert')
-var express = require('express')
-  , request = require('supertest')
-  , cookieParser = require('cookie-parser')
-  , session = require('../')
-  , Cookie = require('../session/cookie')
-var fs = require('fs')
-var http = require('http')
-var https = require('https')
-var util = require('util')
 
 var min = 60 * 1000;
 
 describe('session()', function(){
   it('should export constructors', function(){
-    assert.equal(typeof session.Session, 'function')
-    assert.equal(typeof session.Store, 'function')
-    assert.equal(typeof session.MemoryStore, 'function')
+    assert_assert.equal(typeof index_sessionjs.Session, 'function')
+    assert_assert.equal(typeof index_sessionjs.Store, 'function')
+    assert_assert.equal(typeof index_sessionjs.MemoryStore, 'function')
   })
 
   it('should do nothing if req.session exists', function(done){
@@ -28,14 +27,14 @@ describe('session()', function(){
       req.session = {}
     }
 
-    request(createServer(setup))
+    supertest_request(createServer(setup))
     .get('/')
     .expect(shouldNotHaveHeader('Set-Cookie'))
     .expect(200, done)
   })
 
   it('should error without secret', function(done){
-    request(createServer({ secret: undefined }))
+    supertest_request(createServer({ secret: undefined }))
     .get('/')
     .expect(500, /secret.*required/, done)
   })
@@ -45,26 +44,26 @@ describe('session()', function(){
       req.secret = 'keyboard cat'
     }
 
-    request(createServer(setup, { secret: undefined }))
+    supertest_request(createServer(setup, { secret: undefined }))
     .get('/')
     .expect(200, '', done)
   })
 
   it('should create a new session', function (done) {
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       req.session.active = true
       res.end('session active')
     });
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, 'session active', function (err, res) {
       if (err) return done(err)
       store.length(function (err, len) {
         if (err) return done(err)
-        assert.equal(len, 1)
+        assert_assert.equal(len, 1)
         done()
       })
     })
@@ -77,12 +76,12 @@ describe('session()', function(){
       res.end('session ' + req.session.num)
     });
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, 'session 1', function (err, res) {
       if (err) return done(err)
-      request(server)
+      supertest_request(server)
       .get('/')
       .set('Cookie', cookie(res))
       .expect(200, 'session 1', done)
@@ -90,7 +89,7 @@ describe('session()', function(){
   })
 
   it('should pass session fetch error', function (done) {
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       res.end('hello, world')
     })
@@ -99,12 +98,12 @@ describe('session()', function(){
       callback(new Error('boom!'))
     }
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, 'hello, world', function (err, res) {
       if (err) return done(err)
-      request(server)
+      supertest_request(server)
       .get('/')
       .set('Cookie', cookie(res))
       .expect(500, 'boom!', done)
@@ -113,7 +112,7 @@ describe('session()', function(){
 
   it('should treat ENOENT session fetch error as not found', function (done) {
     var count = 0
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       req.session.num = req.session.num || ++count
       res.end('session ' + req.session.num)
@@ -125,12 +124,12 @@ describe('session()', function(){
       callback(err)
     }
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, 'session 1', function (err, res) {
       if (err) return done(err)
-      request(server)
+      supertest_request(server)
       .get('/')
       .set('Cookie', cookie(res))
       .expect(200, 'session 2', done)
@@ -138,9 +137,9 @@ describe('session()', function(){
   })
 
   it('should create multiple sessions', function (done) {
-    var cb = after(2, check)
+    var cb = after_after(2, check)
     var count = 0
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       var isnew = req.session.num === undefined
       req.session.num = req.session.num || ++count
@@ -151,16 +150,16 @@ describe('session()', function(){
       if (err) return done(err)
       store.all(function (err, sess) {
         if (err) return done(err)
-        assert.equal(Object.keys(sess).length, 2)
+        assert_assert.equal(Object.keys(sess).length, 2)
         done()
       })
     }
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(200, 'session created', cb)
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(200, 'session created', cb)
   })
@@ -170,7 +169,7 @@ describe('session()', function(){
       req.url = ''
     }
 
-    request(createServer(setup))
+    supertest_request(createServer(setup))
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, done)
@@ -183,7 +182,7 @@ describe('session()', function(){
       res.end()
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect('Content-Type', 'text/plain')
     .expect(200, 'Hello, world!', done);
@@ -194,7 +193,7 @@ describe('session()', function(){
       res.end(null)
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(200, '', done)
   })
@@ -202,14 +201,14 @@ describe('session()', function(){
   it('should handle reserved properties in storage', function (done) {
     var count = 0
     var sid
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       sid = req.session.id
       req.session.num = req.session.num || ++count
       res.end('session saved')
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(200, 'session saved', function (err, res) {
       if (err) return done(err)
@@ -219,7 +218,7 @@ describe('session()', function(){
         sess.save = 'nope'
         store.set(sid, sess, function (err) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, 'session saved', done)
@@ -235,13 +234,13 @@ describe('session()', function(){
       res.end(Object.keys(req.session).sort().join(','))
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(200, 'cookie,test1,test2', done)
   })
 
   it('should not save with bogus req.sessionID', function (done) {
-    var store = new session.MemoryStore()
+    var store = new index_sessionjs.MemoryStore()
     var server = createServer({ store: store }, function (req, res) {
       req.sessionID = function () {}
       req.session.test1 = 1
@@ -249,14 +248,14 @@ describe('session()', function(){
       res.end()
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldNotHaveHeader('Set-Cookie'))
     .expect(200, function (err) {
       if (err) return done(err)
       store.length(function (err, length) {
         if (err) return done(err)
-        assert.equal(length, 0)
+        assert_assert.equal(length, 0)
         done()
       })
     })
@@ -271,18 +270,18 @@ describe('session()', function(){
       }, 200)
     })
 
-    request(server)
+    supertest_request(server)
     .get('/')
     .expect(shouldSetCookie('connect.sid'))
     .expect(200, function (err, res) {
       if (err) return done(err);
       var originalExpires = expires(res);
       setTimeout(function () {
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetCookie('connect.sid'))
-        .expect(function (res) { assert.notEqual(originalExpires, expires(res)); })
+        .expect(function (res) { assert_assert.notEqual(originalExpires, expires(res)); })
         .expect(200, done);
       }, (1000 - (Date.now() % 1000) + 200));
     });
@@ -291,7 +290,7 @@ describe('session()', function(){
   describe('when response ended', function () {
     it('should have saved session', function (done) {
       var saved = false
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.hit = true
         res.end('session saved')
@@ -307,18 +306,18 @@ describe('session()', function(){
         }, 200)
       }
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'session saved', function (err) {
         if (err) return done(err)
-        assert.ok(saved)
+        assert_assert.ok(saved)
         done()
       })
     })
 
     it('should have saved session even with empty response', function (done) {
       var saved = false
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.hit = true
         res.setHeader('Content-Length', '0')
@@ -335,18 +334,18 @@ describe('session()', function(){
         }, 200)
       }
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, '', function (err) {
         if (err) return done(err)
-        assert.ok(saved)
+        assert_assert.ok(saved)
         done()
       })
     })
 
     it('should have saved session even with multi-write', function (done) {
       var saved = false
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.hit = true
         res.setHeader('Content-Length', '12')
@@ -364,18 +363,18 @@ describe('session()', function(){
         }, 200)
       }
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'hello, world', function (err) {
         if (err) return done(err)
-        assert.ok(saved)
+        assert_assert.ok(saved)
         done()
       })
     })
 
     it('should have saved session even with non-chunked response', function (done) {
       var saved = false
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.hit = true
         res.setHeader('Content-Length', '13')
@@ -392,23 +391,23 @@ describe('session()', function(){
         }, 200)
       }
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'session saved', function (err) {
         if (err) return done(err)
-        assert.ok(saved)
+        assert_assert.ok(saved)
         done()
       })
     })
 
     it('should have saved session with updated cookie expiration', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ cookie: { maxAge: min }, store: store }, function (req, res) {
         req.session.user = 'bob'
         res.end(req.session.id)
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, function (err, res) {
@@ -416,20 +415,20 @@ describe('session()', function(){
         var id = res.text
         store.get(id, function (err, sess) {
           if (err) return done(err)
-          assert.ok(sess, 'session saved to store')
+          assert_assert.ok(sess, 'session saved to store')
           var exp = new Date(sess.cookie.expires)
-          assert.equal(exp.toUTCString(), expires(res))
+          assert_assert.equal(exp.toUTCString(), expires(res))
           setTimeout(function () {
-            request(server)
+            supertest_request(server)
             .get('/')
             .set('Cookie', cookie(res))
             .expect(200, function (err, res) {
               if (err) return done(err)
               store.get(id, function (err, sess) {
                 if (err) return done(err)
-                assert.equal(res.text, id)
-                assert.ok(sess, 'session still in store')
-                assert.notEqual(new Date(sess.cookie.expires).toUTCString(), exp.toUTCString(), 'session cookie expiration updated')
+                assert_assert.equal(res.text, id)
+                assert_assert.ok(sess, 'session still in store')
+                assert_assert.notEqual(new Date(sess.cookie.expires).toUTCString(), exp.toUTCString(), 'session cookie expiration updated')
                 done()
               })
             })
@@ -442,20 +441,20 @@ describe('session()', function(){
   describe('when sid not in store', function () {
     it('should create a new session', function (done) {
       var count = 0
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.num = req.session.num || ++count
         res.end('session ' + req.session.num)
       });
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, 'session 1', function (err, res) {
         if (err) return done(err)
         store.clear(function (err) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, 'session 2', done)
@@ -465,28 +464,28 @@ describe('session()', function(){
 
     it('should have a new sid', function (done) {
       var count = 0
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.num = req.session.num || ++count
         res.end('session ' + req.session.num)
       });
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, 'session 1', function (err, res) {
         if (err) return done(err)
         var val = sid(res)
-        assert.ok(val)
+        assert_assert.ok(val)
         store.clear(function (err) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetCookie('connect.sid'))
           .expect(200, 'session 2', function (err, res) {
             if (err) return done(err)
-            assert.notEqual(sid(res), val)
+            assert_assert.notEqual(sid(res), val)
             done()
           })
         })
@@ -496,21 +495,21 @@ describe('session()', function(){
 
   describe('when sid not properly signed', function () {
     it('should generate new session', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, key: 'sessid' }, function (req, res) {
         var isnew = req.session.active === undefined
         req.session.active = true
         res.end('session ' + (isnew ? 'created' : 'read'))
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('sessid'))
       .expect(200, 'session created', function (err, res) {
         if (err) return done(err)
         var val = sid(res)
-        assert.ok(val)
-        request(server)
+        assert_assert.ok(val)
+        supertest_request(server)
         .get('/')
         .set('Cookie', 'sessid=' + val)
         .expect(shouldSetCookie('sessid'))
@@ -519,22 +518,22 @@ describe('session()', function(){
     })
 
     it('should not attempt fetch from store', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, key: 'sessid' }, function (req, res) {
         var isnew = req.session.active === undefined
         req.session.active = true
         res.end('session ' + (isnew ? 'created' : 'read'))
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('sessid'))
       .expect(200, 'session created', function (err, res) {
         if (err) return done(err)
         var val = cookie(res).replace(/...\./, '.')
 
-        assert.ok(val)
-        request(server)
+        assert_assert.ok(val)
+        supertest_request(server)
         .get('/')
         .set('Cookie', val)
         .expect(shouldSetCookie('sessid'))
@@ -546,19 +545,19 @@ describe('session()', function(){
   describe('when session expired in store', function () {
     it('should create a new session', function (done) {
       var count = 0
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, cookie: { maxAge: 5 } }, function (req, res) {
         req.session.num = req.session.num || ++count
         res.end('session ' + req.session.num)
       });
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, 'session 1', function (err, res) {
         if (err) return done(err)
         setTimeout(function () {
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetCookie('connect.sid'))
@@ -569,27 +568,27 @@ describe('session()', function(){
 
     it('should have a new sid', function (done) {
       var count = 0
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, cookie: { maxAge: 5 } }, function (req, res) {
         req.session.num = req.session.num || ++count
         res.end('session ' + req.session.num)
       });
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, 'session 1', function (err, res) {
         if (err) return done(err)
         var val = sid(res)
-        assert.ok(val)
+        assert_assert.ok(val)
         setTimeout(function () {
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetCookie('connect.sid'))
           .expect(200, 'session 2', function (err, res) {
             if (err) return done(err)
-            assert.notEqual(sid(res), val)
+            assert_assert.notEqual(sid(res), val)
             done()
           })
         }, 15)
@@ -598,13 +597,13 @@ describe('session()', function(){
 
     it('should not exist in store', function (done) {
       var count = 0
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, cookie: { maxAge: 5 } }, function (req, res) {
         req.session.num = req.session.num || ++count
         res.end('session ' + req.session.num)
       });
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, 'session 1', function (err, res) {
@@ -612,7 +611,7 @@ describe('session()', function(){
         setTimeout(function () {
           store.all(function (err, sess) {
             if (err) return done(err)
-            assert.equal(Object.keys(sess).length, 0)
+            assert_assert.equal(Object.keys(sess).length, 0)
             done()
           })
         }, 10)
@@ -628,7 +627,7 @@ describe('session()', function(){
       })
 
       it('should trust X-Forwarded-Proto when string', function(done){
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('X-Forwarded-Proto', 'https')
         .expect(shouldSetCookie('connect.sid'))
@@ -636,7 +635,7 @@ describe('session()', function(){
       })
 
       it('should trust X-Forwarded-Proto when comma-separated list', function(done){
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('X-Forwarded-Proto', 'https,http')
         .expect(shouldSetCookie('connect.sid'))
@@ -644,7 +643,7 @@ describe('session()', function(){
       })
 
       it('should work when no header', function(done){
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldNotHaveHeader('Set-Cookie'))
         .expect(200, done)
@@ -667,7 +666,7 @@ describe('session()', function(){
       })
 
       it('should not trust X-Forwarded-Proto', function(done){
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .set('X-Forwarded-Proto', 'https')
         .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -675,7 +674,7 @@ describe('session()', function(){
       })
 
       it('should ignore req.secure', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .set('X-Forwarded-Proto', 'https')
         .set('X-Secure', 'true')
@@ -700,7 +699,7 @@ describe('session()', function(){
       })
 
       it('should not trust X-Forwarded-Proto', function(done){
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .set('X-Forwarded-Proto', 'https')
         .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -708,7 +707,7 @@ describe('session()', function(){
       })
 
       it('should use req.secure', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .set('X-Forwarded-Proto', 'https')
         .set('X-Secure', 'true')
@@ -725,14 +724,14 @@ describe('session()', function(){
       })
 
       it('should not set cookie for "/" request', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .expect(shouldNotHaveHeader('Set-Cookie'))
         .expect(200, done)
       })
 
       it('should not set cookie for "http://foo/bar" request', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/')
         .set('host', 'http://foo/bar')
         .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -740,14 +739,14 @@ describe('session()', function(){
       })
 
       it('should set cookie for "/foo/bar" request', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/foo/bar/baz')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, done)
       })
 
       it('should set cookie for "/foo/bar/baz" request', function (done) {
-        request(this.server)
+        supertest_request(this.server)
         .get('/foo/bar/baz')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, done)
@@ -759,14 +758,14 @@ describe('session()', function(){
         })
 
         it('should set cookie for "/foo/bar" request', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/foo/bar')
           .expect(shouldSetCookie('connect.sid'))
           .expect(200, done)
         })
 
         it('should not set cookie for "/foo/foo/bar" request', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/foo/foo/bar')
           .expect(shouldNotHaveHeader('Set-Cookie'))
           .expect(200, done)
@@ -781,7 +780,7 @@ describe('session()', function(){
         })
 
         it('should set secure when X-Forwarded-Proto is https', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('X-Forwarded-Proto', 'https')
           .expect(shouldSetCookieWithAttribute('connect.sid', 'Secure'))
@@ -795,7 +794,7 @@ describe('session()', function(){
         })
 
         it('should not set secure when X-Forwarded-Proto is https', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('X-Forwarded-Proto', 'https')
           .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Secure'))
@@ -817,7 +816,7 @@ describe('session()', function(){
         })
 
         it('should set secure if req.secure = true', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('X-Secure', 'true')
           .expect(shouldSetCookieWithAttribute('connect.sid', 'Secure'))
@@ -825,7 +824,7 @@ describe('session()', function(){
         })
 
         it('should not set secure if req.secure = false', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('X-Secure', 'false')
           .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Secure'))
@@ -837,11 +836,11 @@ describe('session()', function(){
 
   describe('genid option', function(){
     it('should reject non-function values', function(){
-      assert.throws(session.bind(null, { genid: 'bogus!' }), /genid.*must/)
+      assert_assert.throws(index_sessionjs.bind(null, { genid: 'bogus!' }), /genid.*must/)
     });
 
     it('should provide default generator', function(done){
-      request(createServer())
+      supertest_request(createServer())
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, done)
@@ -850,7 +849,7 @@ describe('session()', function(){
     it('should allow custom function', function(done){
       function genid() { return 'apple' }
 
-      request(createServer({ genid: genid }))
+      supertest_request(createServer({ genid: genid }))
       .get('/')
       .expect(shouldSetCookieToValue('connect.sid', 's%3Aapple.D8Y%2BpkTAmeR0PobOhY4G97PRW%2Bj7bUnP%2F5m6%2FOn1MCU'))
       .expect(200, done)
@@ -859,7 +858,7 @@ describe('session()', function(){
     it('should encode unsafe chars', function(done){
       function genid() { return '%' }
 
-      request(createServer({ genid: genid }))
+      supertest_request(createServer({ genid: genid }))
       .get('/')
       .expect(shouldSetCookieToValue('connect.sid', 's%3A%25.kzQ6x52kKVdF35Qh62AWk4ZekS28K5XYCXKa%2FOTZ01g'))
       .expect(200, done)
@@ -868,7 +867,7 @@ describe('session()', function(){
     it('should provide req argument', function(done){
       function genid(req) { return req.url }
 
-      request(createServer({ genid: genid }))
+      supertest_request(createServer({ genid: genid }))
       .get('/foo')
       .expect(shouldSetCookieToValue('connect.sid', 's%3A%2Ffoo.paEKBtAHbV5s1IB8B2zPnzAgYmmnRPIqObW4VRYj%2FMQ'))
       .expect(200, done)
@@ -877,14 +876,14 @@ describe('session()', function(){
 
   describe('key option', function(){
     it('should default to "connect.sid"', function(done){
-      request(createServer())
+      supertest_request(createServer())
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, done)
     })
 
     it('should allow overriding', function(done){
-      request(createServer({ key: 'session_id' }))
+      supertest_request(createServer({ key: 'session_id' }))
       .get('/')
       .expect(shouldSetCookie('session_id'))
       .expect(200, done)
@@ -898,12 +897,12 @@ describe('session()', function(){
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -917,12 +916,12 @@ describe('session()', function(){
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetCookie('connect.sid'))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetCookie('connect.sid'))
@@ -931,10 +930,10 @@ describe('session()', function(){
     });
 
     it('should not force cookie on uninitialized session if saveUninitialized option is set to false', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, rolling: true, saveUninitialized: false })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldNotSetSessionInStore(store))
       .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -942,10 +941,10 @@ describe('session()', function(){
     });
 
     it('should force cookie and save uninitialized session if saveUninitialized option is set to true', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, rolling: true, saveUninitialized: true })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(shouldSetCookie('connect.sid'))
@@ -953,13 +952,13 @@ describe('session()', function(){
     });
 
     it('should force cookie and save modified session even if saveUninitialized option is set to false', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, rolling: true, saveUninitialized: false }, function (req, res) {
         req.session.user = 'bob'
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(shouldSetCookie('connect.sid'))
@@ -969,18 +968,18 @@ describe('session()', function(){
 
   describe('resave option', function(){
     it('should default to true', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.user = 'bob'
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetSessionInStore(store))
@@ -989,18 +988,18 @@ describe('session()', function(){
     });
 
     it('should force save on unmodified session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, resave: true }, function (req, res) {
         req.session.user = 'bob'
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetSessionInStore(store))
@@ -1009,18 +1008,18 @@ describe('session()', function(){
     });
 
     it('should prevent save on unmodified session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, resave: false }, function (req, res) {
         req.session.user = 'bob'
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldNotSetSessionInStore(store))
@@ -1029,19 +1028,19 @@ describe('session()', function(){
     });
 
     it('should still save modified session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, resave: false }, function (req, res) {
         req.session.count = req.session.count || 0
         req.session.count++
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(200, function(err, res){
         if (err) return done(err);
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetSessionInStore(store))
@@ -1050,7 +1049,7 @@ describe('session()', function(){
     });
 
     it('should detect a "cookie" property as modified', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, resave: false }, function (req, res) {
         req.session.user = req.session.user || {}
         req.session.user.name = 'bob'
@@ -1059,12 +1058,12 @@ describe('session()', function(){
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(200, function (err, res) {
         if (err) return done(err)
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(shouldSetSessionInStore(store))
@@ -1073,8 +1072,8 @@ describe('session()', function(){
     })
 
     it('should pass session touch error', function (done) {
-      var cb = after(2, done)
-      var store = new session.MemoryStore()
+      var cb = after_after(2, done)
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, resave: false }, function (req, res) {
         req.session.hit = true
         res.end('session saved')
@@ -1085,16 +1084,16 @@ describe('session()', function(){
       }
 
       server.on('error', function onerror(err) {
-        assert.ok(err)
-        assert.equal(err.message, 'boom!')
+        assert_assert.ok(err)
+        assert_assert.equal(err.message, 'boom!')
         cb()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'session saved', function (err, res) {
         if (err) return cb(err)
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .end(cb)
@@ -1104,10 +1103,10 @@ describe('session()', function(){
 
   describe('saveUninitialized option', function(){
     it('should default to true', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(shouldSetCookie('connect.sid'))
@@ -1115,10 +1114,10 @@ describe('session()', function(){
     });
 
     it('should force save of uninitialized session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, saveUninitialized: true })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(shouldSetCookie('connect.sid'))
@@ -1126,10 +1125,10 @@ describe('session()', function(){
     });
 
     it('should prevent save of uninitialized session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, saveUninitialized: false })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldNotSetSessionInStore(store))
       .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -1137,14 +1136,14 @@ describe('session()', function(){
     });
 
     it('should still save modified session', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, saveUninitialized: false }, function (req, res) {
         req.session.count = req.session.count || 0
         req.session.count++
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldSetSessionInStore(store))
       .expect(shouldSetCookie('connect.sid'))
@@ -1152,8 +1151,8 @@ describe('session()', function(){
     });
 
     it('should pass session save error', function (done) {
-      var cb = after(2, done)
-      var store = new session.MemoryStore()
+      var cb = after_after(2, done)
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, saveUninitialized: true }, function (req, res) {
         res.end('session saved')
       })
@@ -1163,19 +1162,19 @@ describe('session()', function(){
       }
 
       server.on('error', function onerror(err) {
-        assert.ok(err)
-        assert.equal(err.message, 'boom!')
+        assert_assert.ok(err)
+        assert_assert.equal(err.message, 'boom!')
         cb()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'session saved', cb)
     })
 
     it('should prevent uninitialized session from being touched', function (done) {
-      var cb = after(1, done)
-      var store = new session.MemoryStore()
+      var cb = after_after(1, done)
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ saveUninitialized: false, store: store, cookie: { maxAge: min } }, function (req, res) {
         res.end()
       })
@@ -1184,7 +1183,7 @@ describe('session()', function(){
         cb(new Error('should not be called'))
       }
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, cb)
     })
@@ -1192,7 +1191,7 @@ describe('session()', function(){
 
   describe('secret option', function () {
     it('should reject empty arrays', function () {
-      assert.throws(createServer.bind(null, { secret: [] }), /secret option array/);
+      assert_assert.throws(createServer.bind(null, { secret: [] }), /secret option array/);
     })
 
     describe('when an array', function () {
@@ -1202,14 +1201,14 @@ describe('session()', function(){
           res.end(req.session.user);
         });
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, 'bob', done);
       })
 
       it('should sign cookies with first element', function (done) {
-        var store = new session.MemoryStore();
+        var store = new index_sessionjs.MemoryStore();
 
         var server1 = createServer({ secret: ['keyboard cat', 'nyan cat'], store: store }, function (req, res) {
           req.session.user = 'bob';
@@ -1220,12 +1219,12 @@ describe('session()', function(){
           res.end(String(req.session.user));
         });
 
-        request(server1)
+        supertest_request(server1)
         .get('/')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, 'bob', function (err, res) {
           if (err) return done(err);
-          request(server2)
+          supertest_request(server2)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, 'undefined', done);
@@ -1233,7 +1232,7 @@ describe('session()', function(){
       });
 
       it('should read cookies using all elements', function (done) {
-        var store = new session.MemoryStore();
+        var store = new index_sessionjs.MemoryStore();
 
         var server1 = createServer({ secret: 'nyan cat', store: store }, function (req, res) {
           req.session.user = 'bob';
@@ -1244,12 +1243,12 @@ describe('session()', function(){
           res.end(String(req.session.user));
         });
 
-        request(server1)
+        supertest_request(server1)
         .get('/')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, 'bob', function (err, res) {
           if (err) return done(err);
-          request(server2)
+          supertest_request(server2)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, 'bob', done);
@@ -1260,11 +1259,11 @@ describe('session()', function(){
 
   describe('unset option', function () {
     it('should reject unknown values', function(){
-      assert.throws(session.bind(null, { unset: 'bogus!' }), /unset.*must/)
+      assert_assert.throws(index_sessionjs.bind(null, { unset: 'bogus!' }), /unset.*must/)
     });
 
     it('should default to keep', function(done){
-      var store = new session.MemoryStore();
+      var store = new index_sessionjs.MemoryStore();
       var server = createServer({ store: store }, function (req, res) {
         req.session.count = req.session.count || 0
         req.session.count++
@@ -1272,21 +1271,21 @@ describe('session()', function(){
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, function(err, res){
         if (err) return done(err);
         store.length(function(err, len){
           if (err) return done(err);
-          assert.equal(len, 1)
-          request(server)
+          assert_assert.equal(len, 1)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, function(err, res){
             if (err) return done(err);
             store.length(function(err, len){
               if (err) return done(err);
-              assert.equal(len, 1)
+              assert_assert.equal(len, 1)
               done();
             });
           });
@@ -1295,7 +1294,7 @@ describe('session()', function(){
     });
 
     it('should allow destroy on req.session = null', function(done){
-      var store = new session.MemoryStore();
+      var store = new index_sessionjs.MemoryStore();
       var server = createServer({ store: store, unset: 'destroy' }, function (req, res) {
         req.session.count = req.session.count || 0
         req.session.count++
@@ -1303,21 +1302,21 @@ describe('session()', function(){
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, function(err, res){
         if (err) return done(err);
         store.length(function(err, len){
           if (err) return done(err);
-          assert.equal(len, 1)
-          request(server)
+          assert_assert.equal(len, 1)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, function(err, res){
             if (err) return done(err);
             store.length(function(err, len){
               if (err) return done(err);
-              assert.equal(len, 0)
+              assert_assert.equal(len, 0)
               done();
             });
           });
@@ -1326,28 +1325,28 @@ describe('session()', function(){
     });
 
     it('should not set cookie if initial session destroyed', function(done){
-      var store = new session.MemoryStore();
+      var store = new index_sessionjs.MemoryStore();
       var server = createServer({ store: store, unset: 'destroy' }, function (req, res) {
         req.session = null
         res.end()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldNotHaveHeader('Set-Cookie'))
       .expect(200, function(err, res){
         if (err) return done(err);
         store.length(function(err, len){
           if (err) return done(err);
-          assert.equal(len, 0)
+          assert_assert.equal(len, 0)
           done();
         });
       });
     });
 
     it('should pass session destroy error', function (done) {
-      var cb = after(2, done)
-      var store = new session.MemoryStore()
+      var cb = after_after(2, done)
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store, unset: 'destroy' }, function (req, res) {
         req.session = null
         res.end('session destroyed')
@@ -1358,12 +1357,12 @@ describe('session()', function(){
       }
 
       server.on('error', function onerror(err) {
-        assert.ok(err)
-        assert.equal(err.message, 'boom!')
+        assert_assert.ok(err)
+        assert_assert.equal(err.message, 'boom!')
         cb()
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'session destroyed', cb)
     })
@@ -1381,7 +1380,7 @@ describe('session()', function(){
         res.end('world')
       }
 
-      request(createServer(setup, null, respond))
+      supertest_request(createServer(setup, null, respond))
       .get('/')
       .expect(200, 'hello, world', done)
     })
@@ -1394,7 +1393,7 @@ describe('session()', function(){
         res.end('world')
       }
 
-      request(createServer(null, respond))
+      supertest_request(createServer(null, respond))
       .get('/')
       .expect(200, 'hello, world', done)
     })
@@ -1402,21 +1401,21 @@ describe('session()', function(){
 
   describe('req.session', function(){
     it('should persist', function(done){
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         req.session.count = req.session.count || 0
         req.session.count++
         res.end('hits: ' + req.session.count)
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'hits: 1', function (err, res) {
         if (err) return done(err)
         store.load(sid(res), function (err, sess) {
           if (err) return done(err)
-          assert.ok(sess)
-          request(server)
+          assert_assert.ok(sess)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(200, 'hits: 2', done)
@@ -1434,11 +1433,11 @@ describe('session()', function(){
         res.end(req.session.count.toString())
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, '1', function (err, res) {
         if (err) return done(err)
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(200, '2', function (err, res) {
@@ -1446,7 +1445,7 @@ describe('session()', function(){
           var val = cookie(res);
           modify = false;
 
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', val)
           .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -1454,7 +1453,7 @@ describe('session()', function(){
             if (err) return done(err)
             modify = true;
 
-            request(server)
+            supertest_request(server)
             .get('/')
             .set('Cookie', val)
             .expect(shouldSetCookie('connect.sid'))
@@ -1475,34 +1474,34 @@ describe('session()', function(){
         res.end(keys.sort().join(','))
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'bar,cookie,foo', done);
     });
 
     it('should not be set if store is disconnected', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         res.end(typeof req.session)
       })
 
       store.emit('disconnect')
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldNotHaveHeader('Set-Cookie'))
       .expect(200, 'undefined', done)
     })
 
     it('should be set when store reconnects', function (done) {
-      var store = new session.MemoryStore()
+      var store = new index_sessionjs.MemoryStore()
       var server = createServer({ store: store }, function (req, res) {
         res.end(typeof req.session)
       })
 
       store.emit('disconnect')
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(shouldNotHaveHeader('Set-Cookie'))
       .expect(200, 'undefined', function (err) {
@@ -1510,7 +1509,7 @@ describe('session()', function(){
 
         store.emit('connect')
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(200, 'object', done)
       })
@@ -1525,7 +1524,7 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldNotHaveHeader('Set-Cookie'))
         .expect(200, 'undefined', done)
@@ -1542,19 +1541,19 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldSetCookie('connect.sid'))
         .expect(200, function (err, res) {
           if (err) return done(err)
           var id = sid(res)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetCookie('connect.sid'))
           .expect(200, 'false', function (err, res) {
             if (err) return done(err)
-            assert.notEqual(sid(res), id)
+            assert_assert.notEqual(sid(res), id)
             done();
           });
         });
@@ -1577,7 +1576,7 @@ describe('session()', function(){
             return
           }
 
-          request(server)
+          supertest_request(server)
           .get('/bar')
           .set('Cookie', val)
           .expect(200, 'saw /bar', function (err, resp) {
@@ -1590,12 +1589,12 @@ describe('session()', function(){
         })
         var val
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(200, 'session created', function (err, res) {
           if (err) return done(err)
           val = cookie(res)
-          request(server)
+          supertest_request(server)
           .get('/foo')
           .set('Cookie', val)
           .expect(200, 'saw /bar', done)
@@ -1603,7 +1602,7 @@ describe('session()', function(){
       })
 
       it('should error is session missing', function (done) {
-        var store = new session.MemoryStore()
+        var store = new index_sessionjs.MemoryStore()
         var server = createServer({ store: store }, function (req, res) {
           if (req.url === '/') {
             req.session.active = true
@@ -1620,11 +1619,11 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(200, 'session created', function (err, res) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/foo')
           .set('Cookie', cookie(res))
           .expect(500, 'failed to load session', done)
@@ -1634,7 +1633,7 @@ describe('session()', function(){
 
     describe('.save()', function () {
       it('should save session to store', function (done) {
-        var store = new session.MemoryStore()
+        var store = new index_sessionjs.MemoryStore()
         var server = createServer({ store: store }, function (req, res) {
           req.session.hit = true
           req.session.save(function (err) {
@@ -1646,13 +1645,13 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(200, 'stored', done)
       })
 
       it('should prevent end-of-request save', function (done) {
-        var store = new session.MemoryStore()
+        var store = new index_sessionjs.MemoryStore()
         var server = createServer({ store: store }, function (req, res) {
           req.session.hit = true
           req.session.save(function (err) {
@@ -1661,12 +1660,12 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldSetSessionInStore(store))
         .expect(200, 'saved', function (err, res) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetSessionInStore(store))
@@ -1675,7 +1674,7 @@ describe('session()', function(){
       })
 
       it('should prevent end-of-request save on reloaded session', function (done) {
-        var store = new session.MemoryStore()
+        var store = new index_sessionjs.MemoryStore()
         var server = createServer({ store: store }, function (req, res) {
           req.session.hit = true
           req.session.reload(function () {
@@ -1686,12 +1685,12 @@ describe('session()', function(){
           })
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(shouldSetSessionInStore(store))
         .expect(200, 'saved', function (err, res) {
           if (err) return done(err)
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('Cookie', cookie(res))
           .expect(shouldSetSessionInStore(store))
@@ -1702,14 +1701,14 @@ describe('session()', function(){
 
     describe('.touch()', function () {
       it('should reset session expiration', function (done) {
-        var store = new session.MemoryStore()
+        var store = new index_sessionjs.MemoryStore()
         var server = createServer({ resave: false, store: store, cookie: { maxAge: min } }, function (req, res) {
           req.session.hit = true
           req.session.touch()
           res.end()
         })
 
-        request(server)
+        supertest_request(server)
         .get('/')
         .expect(200, function (err, res) {
           if (err) return done(err)
@@ -1718,14 +1717,14 @@ describe('session()', function(){
             if (err) return done(err)
             var exp = new Date(sess.cookie.expires)
             setTimeout(function () {
-              request(server)
+              supertest_request(server)
               .get('/')
               .set('Cookie', cookie(res))
               .expect(200, function (err, res) {
                 if (err) return done(err);
                 store.get(id, function (err, sess) {
                   if (err) return done(err)
-                  assert.notEqual(new Date(sess.cookie.expires).getTime(), exp.getTime())
+                  assert_assert.notEqual(new Date(sess.cookie.expires).getTime(), exp.getTime())
                   done()
                 })
               })
@@ -1744,7 +1743,7 @@ describe('session()', function(){
             res.end()
           })
 
-          request(server)
+          supertest_request(server)
           .get('/')
           .set('X-Forwarded-Proto', 'https')
           .expect(shouldSetCookieWithoutAttribute('connect.sid', 'HttpOnly'))
@@ -1753,7 +1752,7 @@ describe('session()', function(){
         })
 
         it('should default to a browser-session length cookie', function(done){
-          request(createServer({ cookie: { path: '/admin' } }))
+          supertest_request(createServer({ cookie: { path: '/admin' } }))
           .get('/admin')
           .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Expires'))
           .expect(200, done)
@@ -1762,12 +1761,12 @@ describe('session()', function(){
         it('should Set-Cookie only once for browser-session cookies', function(done){
           var server = createServer({ cookie: { path: '/admin' } })
 
-          request(server)
+          supertest_request(server)
           .get('/admin/foo')
           .expect(shouldSetCookie('connect.sid'))
           .expect(200, function (err, res) {
             if (err) return done(err)
-            request(server)
+            supertest_request(server)
             .get('/admin')
             .set('Cookie', cookie(res))
             .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -1781,7 +1780,7 @@ describe('session()', function(){
             res.end()
           })
 
-          request(server)
+          supertest_request(server)
           .get('/admin')
           .expect(shouldSetCookieWithAttribute('connect.sid', 'Expires'))
           .expect(shouldSetCookieWithoutAttribute('connect.sid', 'HttpOnly'))
@@ -1792,12 +1791,12 @@ describe('session()', function(){
 
         it('should preserve cookies set before writeHead is called', function(done){
           var server = createServer(null, function (req, res) {
-            var cookie = new Cookie()
+            var cookie = new sessioncookie_Cookiejs()
             res.setHeader('Set-Cookie', cookie.serialize('previous', 'cookieValue'))
             res.end()
           })
 
-          request(server)
+          supertest_request(server)
           .get('/')
           .expect(shouldSetCookieToValue('previous', 'cookieValue'))
           .expect(200, done)
@@ -1812,15 +1811,15 @@ describe('session()', function(){
         })
 
         it('should set cookie when secure', function (done) {
-          var cert = fs.readFileSync(__dirname + '/fixtures/server.crt', 'ascii')
-          var server = https.createServer({
-            key: fs.readFileSync(__dirname + '/fixtures/server.key', 'ascii'),
+          var cert = fs_fs.readFileSync(__dirname + '/fixtures/server.crt', 'ascii')
+          var server = https_https.createServer({
+            key: fs_fs.readFileSync(__dirname + '/fixtures/server.key', 'ascii'),
             cert: cert
           })
 
           server.on('request', app)
 
-          var agent = new https.Agent({ca: cert})
+          var agent = new https_https.Agent({ca: cert})
           var createConnection = agent.createConnection
 
           agent.createConnection = function (options) {
@@ -1828,16 +1827,16 @@ describe('session()', function(){
             return createConnection.call(this, options)
           }
 
-          var req = request(server).get('/')
+          var req = supertest_request(server).get('/')
           req.agent(agent)
           req.expect(shouldSetCookie('connect.sid'))
           req.expect(200, done)
         })
 
         it('should not set-cookie when insecure', function(done){
-          var server = http.createServer(app)
+          var server = http_http.createServer(app)
 
-          request(server)
+          supertest_request(server)
           .get('/')
           .expect(shouldNotHaveHeader('Set-Cookie'))
           .expect(200, done)
@@ -1866,7 +1865,7 @@ describe('session()', function(){
             res.end(req.session.count.toString())
           })
 
-          request(ctx.server)
+          supertest_request(ctx.server)
           .get('/')
           .end(function (err, res) {
             ctx.cookie = res && cookie(res)
@@ -1875,7 +1874,7 @@ describe('session()', function(){
         })
 
         it('should set cookie expires relative to maxAge', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('Cookie', this.cookie)
           .expect(shouldSetCookieToExpireIn('connect.sid', 2000))
@@ -1883,7 +1882,7 @@ describe('session()', function(){
         })
 
         it('should modify cookie expires when changed', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('Cookie', this.cookie)
           .expect(shouldSetCookieToExpireIn('connect.sid', 5000))
@@ -1891,7 +1890,7 @@ describe('session()', function(){
         })
 
         it('should modify cookie expires when changed to large value', function (done) {
-          request(this.server)
+          supertest_request(this.server)
           .get('/')
           .set('Cookie', this.cookie)
           .expect(shouldSetCookieToExpireIn('connect.sid', 3000000000))
@@ -1907,7 +1906,7 @@ describe('session()', function(){
               res.end()
             })
 
-            request(server)
+            supertest_request(server)
             .get('/')
             .expect(shouldSetCookieWithAttributeAndValue('connect.sid', 'Expires', 'Thu, 01 Jan 1970 00:00:00 GMT'))
             .expect(200, done)
@@ -1921,7 +1920,7 @@ describe('session()', function(){
               res.end()
             })
 
-            request(server)
+            supertest_request(server)
             .get('/')
             .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Expires'))
             .expect(200, done)
@@ -1933,12 +1932,12 @@ describe('session()', function(){
               res.end();
             });
 
-            request(server)
+            supertest_request(server)
             .get('/')
             .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Expires'))
             .expect(200, function (err, res) {
               if (err) return done(err);
-              request(server)
+              supertest_request(server)
               .get('/')
               .set('Cookie', cookie(res))
               .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -1953,12 +1952,12 @@ describe('session()', function(){
               res.end();
             });
 
-            request(server)
+            supertest_request(server)
             .get('/')
             .expect(shouldSetCookieWithoutAttribute('connect.sid', 'Expires'))
             .expect(200, function (err, res) {
               if (err) return done(err);
-              request(server)
+              supertest_request(server)
               .get('/')
               .set('Cookie', cookie(res))
               .expect(shouldNotHaveHeader('Set-Cookie'))
@@ -1979,7 +1978,7 @@ describe('session()', function(){
         res.end('hits: ' + req.session.count)
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'hits: 1', done)
     })
@@ -1996,11 +1995,11 @@ describe('session()', function(){
         res.end('hits: ' + count)
       })
 
-      request(server)
+      supertest_request(server)
       .get('/')
       .expect(200, 'hits: 1', function (err, res) {
         if (err) return done(err)
-        request(server)
+        supertest_request(server)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(200, 'destroyed\nhits: 2', done)
@@ -2010,8 +2009,8 @@ describe('session()', function(){
 
   describe('cookieParser()', function () {
     it('should read from req.cookies', function(done){
-      var app = express()
-        .use(cookieParser())
+      var app = express_express()
+        .use(cookieparser_cookieParser())
         .use(function(req, res, next){ req.headers.cookie = 'foo=bar'; next() })
         .use(createSession())
         .use(function(req, res, next){
@@ -2020,11 +2019,11 @@ describe('session()', function(){
           res.end(req.session.count.toString())
         })
 
-      request(app)
+      supertest_request(app)
       .get('/')
       .expect(200, '1', function (err, res) {
         if (err) return done(err)
-        request(app)
+        supertest_request(app)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(200, '2', done)
@@ -2032,8 +2031,8 @@ describe('session()', function(){
     })
 
     it('should reject unsigned from req.cookies', function(done){
-      var app = express()
-        .use(cookieParser())
+      var app = express_express()
+        .use(cookieparser_cookieParser())
         .use(function(req, res, next){ req.headers.cookie = 'foo=bar'; next() })
         .use(createSession({ key: 'sessid' }))
         .use(function(req, res, next){
@@ -2042,11 +2041,11 @@ describe('session()', function(){
           res.end(req.session.count.toString())
         })
 
-      request(app)
+      supertest_request(app)
       .get('/')
       .expect(200, '1', function (err, res) {
         if (err) return done(err)
-        request(app)
+        supertest_request(app)
         .get('/')
         .set('Cookie', 'sessid=' + sid(res))
         .expect(200, '1', done)
@@ -2054,8 +2053,8 @@ describe('session()', function(){
     })
 
     it('should reject invalid signature from req.cookies', function(done){
-      var app = express()
-        .use(cookieParser())
+      var app = express_express()
+        .use(cookieparser_cookieParser())
         .use(function(req, res, next){ req.headers.cookie = 'foo=bar'; next() })
         .use(createSession({ key: 'sessid' }))
         .use(function(req, res, next){
@@ -2064,12 +2063,12 @@ describe('session()', function(){
           res.end(req.session.count.toString())
         })
 
-      request(app)
+      supertest_request(app)
       .get('/')
       .expect(200, '1', function (err, res) {
         if (err) return done(err)
         var val = cookie(res).replace(/...\./, '.')
-        request(app)
+        supertest_request(app)
         .get('/')
         .set('Cookie', val)
         .expect(200, '1', done)
@@ -2077,8 +2076,8 @@ describe('session()', function(){
     })
 
     it('should read from req.signedCookies', function(done){
-      var app = express()
-        .use(cookieParser('keyboard cat'))
+      var app = express_express()
+        .use(cookieparser_cookieParser('keyboard cat'))
         .use(function(req, res, next){ delete req.headers.cookie; next() })
         .use(createSession())
         .use(function(req, res, next){
@@ -2087,11 +2086,11 @@ describe('session()', function(){
           res.end(req.session.count.toString())
         })
 
-      request(app)
+      supertest_request(app)
       .get('/')
       .expect(200, '1', function (err, res) {
         if (err) return done(err)
-        request(app)
+        supertest_request(app)
         .get('/')
         .set('Cookie', cookie(res))
         .expect(200, '2', done)
@@ -2108,7 +2107,7 @@ function cookie(res) {
 function createServer (options, respond) {
   var fn = respond
   var opts = options
-  var server = http.createServer()
+  var server = http_http.createServer()
 
   // setup, options, respond
   if (typeof arguments[0] === 'function') {
@@ -2156,7 +2155,7 @@ function createSession(opts) {
     options.secret = 'keyboard cat'
   }
 
-  return session(options)
+  return index_sessionjs(options);
 }
 
 function end(req, res) {
@@ -2198,8 +2197,8 @@ function parseSetCookie (header) {
 
 function shouldNotHaveHeader(header) {
   return function (res) {
-    assert.ok(!(header.toLowerCase() in res.headers), 'should not have ' + header + ' header')
-  }
+    assert_assert.ok(!(header.toLowerCase() in res.headers), 'should not have ' + header + ' header')
+  };
 }
 
 function shouldNotSetSessionInStore(store) {
@@ -2212,70 +2211,70 @@ function shouldNotSetSessionInStore(store) {
   }
 
   return function () {
-    assert.ok(count === 0, 'should not set session in store')
-  }
+    assert_assert.ok(count === 0, 'should not set session in store')
+  };
 }
 
 function shouldSetCookie (name) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+  };
 }
 
 function shouldSetCookieToExpireIn (name, delta) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-    assert.ok(('expires' in data), 'should set cookie with attribute Expires')
-    assert.ok(('date' in res.headers), 'should have a date header')
-    assert.equal((Date.parse(data.expires) - Date.parse(res.headers.date)), delta, 'should set cookie ' + name + ' to expire in ' + delta + ' ms')
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+    assert_assert.ok(('expires' in data), 'should set cookie with attribute Expires')
+    assert_assert.ok(('date' in res.headers), 'should have a date header')
+    assert_assert.equal((Date.parse(data.expires) - Date.parse(res.headers.date)), delta, 'should set cookie ' + name + ' to expire in ' + delta + ' ms')
+  };
 }
 
 function shouldSetCookieToValue (name, val) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-    assert.equal(data.value, val, 'should set cookie ' + name + ' to ' + val)
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+    assert_assert.equal(data.value, val, 'should set cookie ' + name + ' to ' + val)
+  };
 }
 
 function shouldSetCookieWithAttribute (name, attrib) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-    assert.ok((attrib.toLowerCase() in data), 'should set cookie with attribute ' + attrib)
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+    assert_assert.ok((attrib.toLowerCase() in data), 'should set cookie with attribute ' + attrib)
+  };
 }
 
 function shouldSetCookieWithAttributeAndValue (name, attrib, value) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-    assert.ok((attrib.toLowerCase() in data), 'should set cookie with attribute ' + attrib)
-    assert.equal(data[attrib.toLowerCase()], value, 'should set cookie with attribute ' + attrib + ' set to ' + value)
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+    assert_assert.ok((attrib.toLowerCase() in data), 'should set cookie with attribute ' + attrib)
+    assert_assert.equal(data[attrib.toLowerCase()], value, 'should set cookie with attribute ' + attrib + ' set to ' + value)
+  };
 }
 
 function shouldSetCookieWithoutAttribute (name, attrib) {
   return function (res) {
     var header = cookie(res)
     var data = header && parseSetCookie(header)
-    assert.ok(header, 'should have a cookie header')
-    assert.equal(data.name, name, 'should set cookie ' + name)
-    assert.ok(!(attrib.toLowerCase() in data), 'should set cookie without attribute ' + attrib)
-  }
+    assert_assert.ok(header, 'should have a cookie header')
+    assert_assert.equal(data.name, name, 'should set cookie ' + name)
+    assert_assert.ok(!(attrib.toLowerCase() in data), 'should set cookie without attribute ' + attrib)
+  };
 }
 
 function shouldSetSessionInStore(store) {
@@ -2288,8 +2287,8 @@ function shouldSetSessionInStore(store) {
   }
 
   return function () {
-    assert.ok(count === 1, 'should set session in store')
-  }
+    assert_assert.ok(count === 1, 'should set session in store')
+  };
 }
 
 function sid(res) {
@@ -2318,11 +2317,11 @@ function writePatch (res) {
 }
 
 function SyncStore () {
-  session.Store.call(this)
+  index_sessionjs.Store.call(this)
   this.sessions = Object.create(null)
 }
 
-util.inherits(SyncStore, session.Store)
+util_util.inherits(SyncStore, index_sessionjs.Store)
 
 SyncStore.prototype.destroy = function destroy(sid, callback) {
   delete this.sessions[sid];
