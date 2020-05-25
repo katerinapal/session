@@ -1,3 +1,17 @@
+var index_session = session;
+import ext_safebuffer_Buffer from "safe-buffer";
+import ext_cookie_cookie from "cookie";
+import ext_crypto_crypto from "crypto";
+import ext_debug_debug from "debug";
+import ext_depd_depd from "depd";
+import ext_onheaders_onHeaders from "on-headers";
+import ext_parseurl_parseUrl from "parseurl";
+import ext_cookiesignature_signature from "cookie-signature";
+import ext_uidsafe_uid from "uid-safe";
+import { Cookie as sessioncookie_Cookiejs } from "./session/cookie";
+import { MemoryStore as sessionmemory_MemoryStorejs } from "./session/memory";
+import { Session as sessionsession_Sessionjs } from "./session/session";
+import { Store as sessionstore_Storejs } from "./session/store";
 /*!
  * express-session
  * Copyright(c) 2010 Sencha Inc.
@@ -13,39 +27,23 @@
  * @private
  */
 
-var Buffer = require('safe-buffer').Buffer
-var cookie = require('cookie');
-var crypto = require('crypto')
-var debug = require('debug')('express-session');
-var deprecate = require('depd')('express-session');
-var onHeaders = require('on-headers')
-var parseUrl = require('parseurl');
-var signature = require('cookie-signature')
-var uid = require('uid-safe').sync
-
-var Cookie = require('./session/cookie')
-var MemoryStore = require('./session/memory')
-var Session = require('./session/session')
-var Store = require('./session/store')
+var Buffer = ext_safebuffer_Buffer.Buffer
+var debug = ext_debug_debug('express-session');
+var deprecate = ext_depd_depd('express-session');
+var uid = ext_uidsafe_uid.sync
 
 // environment
 
 var env = process.env.NODE_ENV;
 
 /**
- * Expose the middleware.
- */
-
-exports = module.exports = session;
-
-/**
  * Expose constructors.
  */
 
-exports.Store = Store;
-exports.Cookie = Cookie;
-exports.Session = Session;
-exports.MemoryStore = MemoryStore;
+index_session.Store = sessionstore_Storejs;
+index_session.Cookie = sessioncookie_Cookiejs;
+index_session.Session = sessionsession_Sessionjs;
+index_session.MemoryStore = sessionmemory_MemoryStorejs;
 
 /**
  * Warning message for `MemoryStore` usage in production.
@@ -66,24 +64,6 @@ var defer = typeof setImmediate === 'function'
   ? setImmediate
   : function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
 
-/**
- * Setup session store with the given `options`.
- *
- * @param {Object} [options]
- * @param {Object} [options.cookie] Options for cookie
- * @param {Function} [options.genid]
- * @param {String} [options.name=connect.sid] Session ID cookie name
- * @param {Boolean} [options.proxy]
- * @param {Boolean} [options.resave] Resave unmodified sessions back to the store
- * @param {Boolean} [options.rolling] Enable/disable rolling session expiration
- * @param {Boolean} [options.saveUninitialized] Save uninitialized sessions to the store
- * @param {String|Array} [options.secret] Secret for signing session ID
- * @param {Object} [options.store=MemoryStore] Session store
- * @param {String} [options.unset]
- * @return {Function} middleware
- * @public
- */
-
 function session(options) {
   var opts = options || {}
 
@@ -97,7 +77,7 @@ function session(options) {
   var name = opts.name || opts.key || 'connect.sid'
 
   // get the session store
-  var store = opts.store || new MemoryStore()
+  var store = opts.store || new sessionmemory_MemoryStorejs()
 
   // get the trust proxy setting
   var trustProxy = opts.proxy
@@ -150,15 +130,15 @@ function session(options) {
   // notify user that this store is not
   // meant for a production environment
   /* istanbul ignore next: not tested */
-  if ('production' == env && store instanceof MemoryStore) {
+  if ('production' == env && store instanceof sessionmemory_MemoryStorejs) {
     console.warn(warning);
   }
 
   // generates the new session
   store.generate = function(req){
     req.sessionID = generateId(req);
-    req.session = new Session(req);
-    req.session.cookie = new Cookie(cookieOptions);
+    req.session = new sessionsession_Sessionjs(req);
+    req.session.cookie = new sessioncookie_Cookiejs(cookieOptions);
 
     if (cookieOptions.secure === 'auto') {
       req.session.cookie.secure = issecure(req, trustProxy);
@@ -192,7 +172,7 @@ function session(options) {
     }
 
     // pathname mismatch
-    var originalPath = parseUrl.original(req).pathname || '/'
+    var originalPath = ext_parseurl_parseUrl.original(req).pathname || '/'
     if (originalPath.indexOf(cookieOptions.path || '/') !== 0) return next();
 
     // ensure a secret is available or bail
@@ -217,7 +197,7 @@ function session(options) {
     var cookieId = req.sessionID = getcookie(req, name, secrets);
 
     // set-cookie
-    onHeaders(res, function(){
+    ext_onheaders_onHeaders(res, function(){
       if (!req.session) {
         debug('no session');
         return;
@@ -490,7 +470,7 @@ function session(options) {
       next();
     });
   };
-};
+}
 
 /**
  * Generate a session ID for a new session.
@@ -517,7 +497,7 @@ function getcookie(req, name, secrets) {
 
   // read from cookie header
   if (header) {
-    var cookies = cookie.parse(header);
+    var cookies = ext_cookie_cookie.parse(header);
 
     raw = cookies[name];
 
@@ -589,10 +569,10 @@ function hash(sess) {
   })
 
   // hash
-  return crypto
+  return ext_crypto_crypto
     .createHash('sha1')
     .update(str, 'utf8')
-    .digest('hex')
+    .digest('hex');
 }
 
 /**
@@ -637,8 +617,8 @@ function issecure(req, trustProxy) {
  */
 
 function setcookie(res, name, val, secret, options) {
-  var signed = 's:' + signature.sign(val, secret);
-  var data = cookie.serialize(name, signed, options);
+  var signed = 's:' + ext_cookiesignature_signature.sign(val, secret);
+  var data = ext_cookie_cookie.serialize(name, signed, options);
 
   debug('set-cookie %s', data);
 
@@ -658,7 +638,7 @@ function setcookie(res, name, val, secret, options) {
  */
 function unsigncookie(val, secrets) {
   for (var i = 0; i < secrets.length; i++) {
-    var result = signature.unsign(val, secrets[i]);
+    var result = ext_cookiesignature_signature.unsign(val, secrets[i]);
 
     if (result !== false) {
       return result;
@@ -667,3 +647,23 @@ function unsigncookie(val, secrets) {
 
   return false;
 }
+
+/**
+ * Setup session store with the given `options`.
+ *
+ * @param {Object} [options]
+ * @param {Object} [options.cookie] Options for cookie
+ * @param {Function} [options.genid]
+ * @param {String} [options.name=connect.sid] Session ID cookie name
+ * @param {Boolean} [options.proxy]
+ * @param {Boolean} [options.resave] Resave unmodified sessions back to the store
+ * @param {Boolean} [options.rolling] Enable/disable rolling session expiration
+ * @param {Boolean} [options.saveUninitialized] Save uninitialized sessions to the store
+ * @param {String|Array} [options.secret] Secret for signing session ID
+ * @param {Object} [options.store=MemoryStore] Session store
+ * @param {String} [options.unset]
+ * @return {Function} middleware
+ * @public
+ */
+
+export { index_session as session };
