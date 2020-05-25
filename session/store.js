@@ -1,8 +1,26 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Store = undefined;
+
+var _cookie = require("./cookie");
+
+var _events = require("events");
+
+var _events2 = _interopRequireDefault(_events);
+
+var _session = require("./session");
+
+var _util = require("util");
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var store_Store = Store;
-import { Cookie as cookie_Cookiejs } from "./cookie";
-import ext_events_EventEmitter from "events";
-import { Session as session_Sessionjs } from "./session";
-import ext_util_util from "util";
+
 /*!
  * Connect - session - Store
  * Copyright(c) 2010 Sencha Inc.
@@ -12,17 +30,17 @@ import ext_util_util from "util";
 
 'use strict';
 
-var EventEmitter = ext_events_EventEmitter.EventEmitter
+var EventEmitter = _events2.default.EventEmitter;
 
 function Store() {
-  EventEmitter.call(this)
+  EventEmitter.call(this);
 }
 
 /**
  * Inherit from EventEmitter.
  */
 
-ext_util_util.inherits(Store, EventEmitter)
+_util2.default.inherits(Store, EventEmitter);
 
 /**
  * Re-generate the given requests's session.
@@ -32,9 +50,9 @@ ext_util_util.inherits(Store, EventEmitter)
  * @api public
  */
 
-Store.prototype.regenerate = function(req, fn){
+Store.prototype.regenerate = function (req, fn) {
   var self = this;
-  this.destroy(req.sessionID, function(err){
+  this.destroy(req.sessionID, function (err) {
     self.generate(req);
     fn(err);
   });
@@ -49,13 +67,13 @@ Store.prototype.regenerate = function(req, fn){
  * @api public
  */
 
-Store.prototype.load = function(sid, fn){
+Store.prototype.load = function (sid, fn) {
   var self = this;
-  this.get(sid, function(err, sess){
+  this.get(sid, function (err, sess) {
     if (err) return fn(err);
     if (!sess) return fn();
     var req = { sessionID: sid, sessionStore: self };
-    fn(null, self.createSession(req, sess))
+    fn(null, self.createSession(req, sess));
   });
 };
 
@@ -68,14 +86,14 @@ Store.prototype.load = function(sid, fn){
  * @api private
  */
 
-Store.prototype.createSession = function(req, sess){
-  var expires = sess.cookie.expires
-  var orig = sess.cookie.originalMaxAge
+Store.prototype.createSession = function (req, sess) {
+  var expires = sess.cookie.expires;
+  var orig = sess.cookie.originalMaxAge;
 
-  sess.cookie = new cookie_Cookiejs(sess.cookie);
+  sess.cookie = new _cookie.Cookie(sess.cookie);
   if ('string' == typeof expires) sess.cookie.expires = new Date(expires);
   sess.cookie.originalMaxAge = orig;
-  req.session = new session_Sessionjs(req, sess);
+  req.session = new _session.Session(req, sess);
   return req.session;
 };
 
@@ -84,4 +102,4 @@ Store.prototype.createSession = function(req, sess){
  * @public
  */
 
-export { store_Store as Store };
+exports.Store = store_Store;
