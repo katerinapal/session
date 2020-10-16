@@ -1,3 +1,4 @@
+var session_Session = Session;
 /*!
  * Connect - session - Session
  * Copyright(c) 2010 Sencha Inc.
@@ -6,20 +7,6 @@
  */
 
 'use strict';
-
-/**
- * Expose Session.
- */
-
-module.exports = Session;
-
-/**
- * Create a new `Session` with the given request and `data`.
- *
- * @param {IncomingRequest} req
- * @param {Object} data
- * @api private
- */
 
 function Session(req, data) {
   Object.defineProperty(this, 'req', { value: req });
@@ -140,4 +127,14 @@ function defineMethod(obj, name, fn) {
     value: fn,
     writable: true
   });
-};
+}
+
+/**
+ * Create a new `Session` with the given request and `data`.
+ *
+ * @param {IncomingRequest} req
+ * @param {Object} data
+ * @api private
+ */
+
+export { session_Session as Session };

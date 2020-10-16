@@ -1,3 +1,8 @@
+var store_Store = Store;
+import { Cookie as cookie_Cookiejs } from "./cookie";
+import ext_events_events from "events";
+import { Session as session_Sessionjs } from "./session";
+import ext_util_util from "util";
 /*!
  * Connect - session - Store
  * Copyright(c) 2010 Sencha Inc.
@@ -7,29 +12,9 @@
 
 'use strict';
 
-/**
- * Module dependencies.
- * @private
- */
+var EventEmitter = ext_events_events.EventEmitter
 
-var Cookie = require('./cookie')
-var EventEmitter = require('events').EventEmitter
-var Session = require('./session')
-var util = require('util')
-
-/**
- * Module exports.
- * @public
- */
-
-module.exports = Store
-
-/**
- * Abstract base class for session stores.
- * @public
- */
-
-function Store () {
+function Store() {
   EventEmitter.call(this)
 }
 
@@ -37,7 +22,7 @@ function Store () {
  * Inherit from EventEmitter.
  */
 
-util.inherits(Store, EventEmitter)
+ext_util_util.inherits(Store, EventEmitter)
 
 /**
  * Re-generate the given requests's session.
@@ -87,9 +72,16 @@ Store.prototype.createSession = function(req, sess){
   var expires = sess.cookie.expires
   var orig = sess.cookie.originalMaxAge
 
-  sess.cookie = new Cookie(sess.cookie);
+  sess.cookie = new cookie_Cookiejs(sess.cookie);
   if ('string' == typeof expires) sess.cookie.expires = new Date(expires);
   sess.cookie.originalMaxAge = orig;
-  req.session = new Session(req, sess);
+  req.session = new session_Sessionjs(req, sess);
   return req.session;
 };
+
+/**
+ * Abstract base class for session stores.
+ * @public
+ */
+
+export { store_Store as Store };
