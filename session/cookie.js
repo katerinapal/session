@@ -1,3 +1,5 @@
+import ext_cookie_cookie from "cookie";
+import ext_depd from "depd";
 /*!
  * Connect - session - Cookie
  * Copyright(c) 2010 Sencha Inc.
@@ -7,12 +9,9 @@
 
 'use strict';
 
-/**
- * Module dependencies.
- */
+var deprecate = ext_depd('express-session')
 
-var cookie = require('cookie')
-var deprecate = require('depd')('express-session')
+var mod_Cookie;
 
 /**
  * Initialize a new `Cookie` with the given `options`.
@@ -22,7 +21,7 @@ var deprecate = require('depd')('express-session')
  * @api private
  */
 
-var Cookie = module.exports = function Cookie(options) {
+var Cookie = function Cookie(options) {
   this.path = '/';
   this.maxAge = null;
   this.httpOnly = true;
@@ -132,7 +131,7 @@ Cookie.prototype = {
    */
 
   serialize: function(name, val){
-    return cookie.serialize(name, val, this.data);
+    return ext_cookie_cookie.serialize(name, val, this.data);
   },
 
   /**
@@ -146,3 +145,5 @@ Cookie.prototype = {
     return this.data;
   }
 };
+mod_Cookie = Cookie;
+export { mod_Cookie as Cookie };
